@@ -27,9 +27,10 @@
                 Othello is a strategy board game for two players, played on an 8x8 board. Two players play a game with coins(disks) of two colors, here red and blue. The main objective is to have more number of disks of your color when the game ends.
             </p>
             <p>
-                Select one option from below:
+                Put server address and select one option from below:
             </p>
             <form action="game.jsp" method="post">
+                SERVER IP: <input type="text" name="server" value="127.0.0.1" required="required" /> <br/>
                 <input type="radio" name="game_type" value="1" onclick="hide();" required="required" /> NEW GAME <br/>
                 <input type="radio" name="game_type" value="2" onclick="unhide();" required="required" /> JOIN EXISTING GAME<br/>
                 <div id="tokendiv" class="hide">Token Number: <input type="text" id="token_num" name="token_num" /> </div>

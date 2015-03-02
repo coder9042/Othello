@@ -19,10 +19,35 @@ body{
 }
 #main{
 	margin: 25 auto;
+	padding: 25px;
 	width: 70%;
 	font-family: 'Cambria';
+	text-align: center;
 	border-style: solid;
 	border-width: thin;
 	border-color: white;
 	border-radius: 15px;
+}
+#main table tr td{
+	background: yellow;
+	border-style: solid;
+	border-width: thin;
+	border-color: rgb(18, 123, 92);
+}
+.cell{
+	width:50px;
+	height:50px;
+	background: yellow;
+}
+.red_cell{
+	width:50px;
+	height:50px;
+	background: red;
+	border-radius: 25px;
+}
+.blue_cell{
+	width:50px;
+	height:50px;
+	background: blue;
+	border-radius: 25px;
 }

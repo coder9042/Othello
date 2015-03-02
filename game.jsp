@@ -1,6 +1,7 @@
 <%@ page import="java.io.*, java.net.*" %>
 <%!
     int type;
+    String ipAddress;
     String token;
     String submit;
     Socket socket;
@@ -26,8 +27,9 @@
             try{
                 submit = request.getParameter("submit");
                 if(submit != null){
+                    ipAddress = request.getParameter("server");
                     type = Integer.parseInt(request.getParameter("game_type"));
-                    socket = new Socket("127.0.0.1", 6789);
+                    socket = new Socket(ipAddress, 6789);
                     outToServer = new DataOutputStream(socket.getOutputStream());
                     inFromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     if(type == 1){
@@ -50,9 +52,56 @@
                         token = inFromServer.readLine();
                         socket.close();
 
-                        gameSocket = new Socket("127.0.0.1", port);
+                        gameSocket = new Socket(ipAddress, port);
                         inFromServer = new BufferedReader(new InputStreamReader(gameSocket.getInputStream()));
                         gameBoard = inFromServer.readLine();
+
+                        %>
+
+                        <div id="header">
+                            OTHELLO ONLINE
+                        </div>
+                        <div id="main">
+                            <table align="center" borders="all" >
+                            <%
+                                ind = 0;
+                                for(int i=0;i<8;i++){
+                                    %>
+                                    <tr>
+                                    <%
+                                    for(int j=0;j<8;j++){
+                                        %>
+                                        <td>
+                                        <%
+                                        if(gameBoard.charAt(ind) == '.'){
+                                        %>
+                                        <div id="cell#<% out.println(i+"_"+j); %>" class="cell"></div>
+                                        <%
+                                        }
+                                        else if(gameBoard.charAt(ind) == 'r'){
+                                        %>
+                                        <div id="cell#<% out.println(i+"_"+j); %>" class="red_cell"></div>
+                                        <%
+                                        }
+                                        else if(gameBoard.charAt(ind) == 'b'){
+                                        %>
+                                        <div id="cell#<% out.println(i+"_"+j); %>" class="blue_cell"></div>
+                                        <%
+                                        }
+                                        %>
+                                        </td>
+                                        <%
+                                        ind++;
+                                    }
+                                    %>
+                                    </tr>
+                                    <%
+                                }
+                            %>
+                        </table>
+                        </div>
+
+                        <%
 
                         final Socket fixedSocket = gameSocket;
                         Thread listeningThread = new Thread(new Runnable(){
@@ -81,21 +130,5 @@
                 <%
             }
         %>
-        <div id="header">
-            OTHELLO ONLINE
-        </div>
-        <div id="main">
-            <%
-                ind = 0;
-                for(int i=0;i<8;i++){
-                    for(int j=0;j<8;j++){
-                        out.println(gameBoard.charAt(ind++));
-                    }
-                    %>
-                        <br/>
-                    <%
-                }
-            %>
-        </div>
     </body>
 </html>
