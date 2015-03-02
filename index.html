@@ -1,0 +1,40 @@
+<html>
+	<head>
+        <title>OTHELLO</title>
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <script type="text/javascript">
+            function unhide () {
+                var div = document.getElementById('tokendiv');
+                div.className = 'unhide';
+                var field = document.getElementById('token_num');
+                field.required = 'required';
+            }
+            function hide () {
+                var div = document.getElementById('tokendiv');
+                div.className = 'hide';
+                var field = document.getElementById('token_num');
+                field.required = '';
+            }
+        </script>
+    </head>
+
+	<body>
+        <div id="header">
+            OTHELLO ONLINE
+        </div>
+        <div id="main">
+            <p>
+                Othello is a strategy board game for two players, played on an 8x8 board. Two players play a game with coins(disks) of two colors, here red and blue. The main objective is to have more number of disks of your color when the game ends.
+            </p>
+            <p>
+                Select one option from below:
+            </p>
+            <form action="game.jsp" method="post">
+                <input type="radio" name="game_type" value="1" onclick="hide();" required="required" /> NEW GAME <br/>
+                <input type="radio" name="game_type" value="2" onclick="unhide();" required="required" /> JOIN EXISTING GAME<br/>
+                <div id="tokendiv" class="hide">Token Number: <input type="text" id="token_num" name="token_num" /> </div>
+                <input type="submit" name="submit" style="min-width:150px; min-height:40px; font-size:20px; color:white; background:black" value="PLAY" />
+            </form>
+        </div>
+	</body>
+</html>
