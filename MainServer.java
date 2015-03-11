@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 class MainServer{
 	private static String currToken = "A0";
-	private static int currPort = 9000;
+	private static int currPort = 9001;
 	private static HashMap<String, Integer> tokenSocketMap = new HashMap<String, Integer>();
 	private static String getNextToken(){
 		char part1 = currToken.charAt(0);

@@ -32,6 +32,8 @@ body{
 	background: yellow;
 	border-style: solid;
 	border-width: thin;
+	width:50px;
+	height:50px;
 	border-color: rgb(18, 123, 92);
 }
 .cell{

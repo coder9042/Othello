@@ -5,11 +5,14 @@
     String token;
     String submit;
     Socket socket;
-    Socket gameSocket;
+    DatagramSocket gameSocket;
+    DatagramPacket gamePacket;
     int port;
     DataOutputStream outToServer;
     BufferedReader inFromServer;
-    String gameBoard;
+    String gameBoard="";
+    String myAddress;
+    String myPort;
     int ind;
 %> 
 <html>
@@ -20,6 +23,19 @@
             function home () {
                 window.location = "index.html";
             }
+            function send(x, y, addr, port){
+                //alert(x+","+y+","+addr+","+port);
+                var res = "";
+                var xmlHttp = new XMLHttpRequest();
+
+                if(xmlHttp != null){
+                    xmlHttp.open("GET", "sendData.jsp?row="+x+"&col="+y+"&addr="+addr+"&port="+port, false);
+                    xmlHttp.send(null);
+                    res = xmlHttp.responseText;
+                    //alert(res);
+                }
+            }
+
         </script>
     </head>
     <body>
@@ -51,11 +67,33 @@
                         port = Integer.parseInt(reply);
                         token = inFromServer.readLine();
                         socket.close();
+                        //out.println(ipAddress+":"+port);
 
-                        gameSocket = new Socket(ipAddress, port);
-                        inFromServer = new BufferedReader(new InputStreamReader(gameSocket.getInputStream()));
-                        gameBoard = inFromServer.readLine();
+                        gameSocket = new DatagramSocket();
+                        byte[] receiveData;
+                        byte[] sendData;
 
+                        myAddress = InetAddress.getLocalHost().toString();
+                        myAddress = myAddress.substring(myAddress.indexOf('/')+1);
+                        sendData = myAddress.getBytes();
+                        //out.println("sendata.length="+sendData.length);
+                        gamePacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(ipAddress), port);
+                        gameSocket.send(gamePacket);
+
+                        myPort = String.valueOf(gameSocket.getLocalPort());
+                        sendData = myPort.getBytes();
+                        gamePacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(ipAddress), port);
+                        gameSocket.send(gamePacket);
+
+                        //out.println(myAddress + ":" + myPort);
+
+                        receiveData = new byte[1024];
+                        gamePacket = new DatagramPacket(receiveData, receiveData.length);
+                        gameSocket.receive(gamePacket);
+                        gameBoard = new String(gamePacket.getData());
+                        
+                        //gameSocket.close();
+                        //gameBoard = "................................................................";
                         %>
 
                         <div id="header">
@@ -75,17 +113,17 @@
                                         <%
                                         if(gameBoard.charAt(ind) == '.'){
                                         %>
-                                        <div id="cell#<% out.println(i+"_"+j); %>" class="cell"></div>
+                                        <input type="button" value="" id="cell#<% out.println(i+"_"+j); %>" class="cell" onclick="send(<% out.println(print(i,j,ipAddress,port)); %>);" />
                                         <%
                                         }
                                         else if(gameBoard.charAt(ind) == 'r'){
                                         %>
-                                        <div id="cell#<% out.println(i+"_"+j); %>" class="red_cell"></div>
+                                        <input type="button" id="cell#<% out.println(i+"_"+j); %>" class="red_cell" />
                                         <%
                                         }
                                         else if(gameBoard.charAt(ind) == 'b'){
                                         %>
-                                        <div id="cell#<% out.println(i+"_"+j); %>" class="blue_cell"></div>
+                                        <input type="button" id="cell#<% out.println(i+"_"+j); %>" class="blue_cell" />
                                         <%
                                         }
                                         %>
@@ -102,19 +140,26 @@
                         </div>
 
                         <%
-
-                        final Socket fixedSocket = gameSocket;
-                        Thread listeningThread = new Thread(new Runnable(){
+                        class Listen implements Runnable{
                             public void run(){
                                 try{
-                                    BufferedReader inputStream = new BufferedReader(new InputStreamReader(fixedSocket.getInputStream()));
-                                    String board = inputStream.readLine();
+                                    while(true){
+                                        //byte[] recData = new byte[1024];
+                                        //DatagramPacket updatePacket = new DatagramPacket(recData, recData.length);
+                                        //gameSocket.receive(updatePacket);
+                                        //gameBoard = new String(updatePacket.getData());
+                                        PrintWriter p = new PrintWriter(new FileOutputStream(new File("currentData.txt"), true));
+                                        //p.println(new String(updatePacket.getData()));
+                                        p.println("anubhav");
+                                        p.close();
+                                    }
                                 }
                                 catch(IOException e){
                                     //
                                 }
                             }
-                        });
+                        }
+                        Thread listeningThread = new Thread(new Listen());
                         listeningThread.start();
                     }             
                 }
@@ -130,5 +175,53 @@
                 <%
             }
         %>
+        <%!
+            /*public void sendToServer(String p, String q){
+                try{
+					int x = Integer.parseInt(p.trim());
+					int y = Integer.parseInt(q.trim());
+                    outToServer = new DataOutputStream(gameSocket.getOutputStream());
+                    outToServer.writeBytes(x+","+y+"\n");
+                }
+                catch(Exception e){
+                    //
+                }
+            }*/
+            public String print(int i, int j, String ipAddress, int port){
+                return "'"+i+"','"+j+"','"+ipAddress+"','"+port+"'";
+            }
+        %>
+        <script>
+        function update(){
+            var xmlHttp = new XMLHttpRequest();
+            var board;
+            if(xmlHttp != null){
+                var port = '<%=port %>';
+                xmlHttp.open("GET", "data/game_"+port+".txt", false);
+                xmlHttp.send(null);
+                board = xmlHttp.responseText;
+                //alert(res);
+            }
+            alert(board);
+            var ind = 0;
+            for (var i = 0; i < 8; i++) {
+                for(var j = 0; j< 8; j++){
+                    var elem = document.getElementById("cell#"+i+"_"+j);
+                    if(board.charAt(ind) == '.'){
+                        elem.className = 'cell';
+                    }
+                    else if(board.charAt(ind) == 'r'){
+                        elem.className = 'red_cell';
+                        elem.onclick = '';
+                    }
+                    else if(board.charAt(ind) == 'b'){
+                        elem.className = 'blue_cell';
+                        elem.onclick = '';
+                    }
+                }
+            }
+            setTimeout(update, 5000);
+        }
+        </script>
     </body>
 </html>

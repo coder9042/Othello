@@ -8,12 +8,18 @@
                 div.className = 'unhide';
                 var field = document.getElementById('token_num');
                 field.required = 'required';
+
+                var div2 = document.getElementById('firstmove');
+                div2.value = '0';
             }
             function hide () {
                 var div = document.getElementById('tokendiv');
                 div.className = 'hide';
                 var field = document.getElementById('token_num');
                 field.required = '';
+
+                var div2 = document.getElementById('firstmove');
+                div2.value = '1';
             }
         </script>
     </head>
@@ -31,6 +37,7 @@
             </p>
             <form action="game.jsp" method="post">
                 SERVER IP: <input type="text" name="server" value="127.0.0.1" required="required" /> <br/>
+                <input type="text" id="firstmove" name="firstmove" value="1" required="required" hidden="hidden" />
                 <input type="radio" name="game_type" value="1" onclick="hide();" required="required" /> NEW GAME <br/>
                 <input type="radio" name="game_type" value="2" onclick="unhide();" required="required" /> JOIN EXISTING GAME<br/>
                 <div id="tokendiv" class="hide">Token Number: <input type="text" id="token_num" name="token_num" /> </div>
