@@ -65,9 +65,13 @@ class Game{
 	public boolean move(int row, int col, char color){
 		// Returns true if the specified move is valid and move is made else returns false
 
+		if(row < 0 || col < 0 || row > 7 || col > 7)
+			return false;
+
 		if(board[row][col] == '.' && isMovePossible(row, col, color)){
 			board[row][col] = color;
 			flip(row, col, color);
+			//flip2(color);
 			return true;
 		}
 		else{
@@ -98,7 +102,8 @@ class Game{
 		int b_right[] = getIndices(row, col, color, '4');
 
 		if(left != null){
-			for(int i=left[1];i<=col;i++){
+			System.out.println("left");
+			for(int i=left[0];i<=col;i++){
 				board[row][i] = color;
 			}
 		}
@@ -108,7 +113,9 @@ class Game{
 			}
 		}
 		if(top != null){
-			for(int i=top[1];i<=row;i++){
+			System.out.println("top");
+			for(int i=top[0];i<=row;i++){
+				System.out.println(i);
 				board[i][col] = color;
 			}
 		}
@@ -135,6 +142,57 @@ class Game{
 		if(b_right != null){
 			for(int i=b_right[0], j=b_right[1];i>=row && j>=col;i--, j--){
 				board[i][j] = color;
+			}
+		}
+
+		//flip2(color);
+	}
+	private void flip2(char color){
+		char complementary;
+		if(color == RED)
+			complementary = BLUE;
+		else
+			complementary = RED;
+
+		
+		for(int i=0;i<8;i++){
+			int start_ind = -1;
+			int end_ind = -1;
+			for(int j=0;j<8;j++){
+				if(board[i][j] == color && start_ind == -1){
+					start_ind = j;
+					end_ind = j;
+				}
+				if(board[i][j] == complementary && start_ind != -1 && j == end_ind+1){
+					end_ind = j;
+				}
+			}
+			if(start_ind != -1 && board[i][end_ind+1] == color){
+				System.out.println(i+","+start_ind+" to "+i+","+end_ind);
+				for(int k = start_ind+1; k<=end_ind;k++){
+					board[i][k] = color;
+				}
+			}
+		}
+
+
+		for(int i=0;i<8;i++){
+			int start_ind = -1;
+			int end_ind = -1;
+			for(int j=0;j<8;j++){
+				if(board[j][i] == color && start_ind == -1){
+					start_ind = j;
+					end_ind = j;
+				}
+				if(board[j][i] == complementary && start_ind != -1 && j == end_ind+1){
+					end_ind = j;
+				}
+			}
+			if(start_ind != -1 && board[end_ind+1][i] == color){
+				System.out.println(start_ind+","+i+" to "+end_ind+","+i);
+				for(int k = start_ind+1; k<=end_ind;k++){
+					board[k][i] = color;
+				}
 			}
 		}
 	}

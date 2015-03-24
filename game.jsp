@@ -5,8 +5,8 @@
     String token;
     String submit;
     Socket socket;
-    DatagramSocket gameSocket;
-    DatagramPacket gamePacket;
+    Socket gameSocket;
+    int turn;
     int port;
     DataOutputStream outToServer;
     BufferedReader inFromServer;
@@ -23,13 +23,13 @@
             function home () {
                 window.location = "index.html";
             }
-            function send(x, y, addr, port){
+            function send(x, y, addr, port, turn){
                 //alert(x+","+y+","+addr+","+port);
                 var res = "";
                 var xmlHttp = new XMLHttpRequest();
-
+                //alert(turn);
                 if(xmlHttp != null){
-                    xmlHttp.open("GET", "sendData.jsp?row="+x+"&col="+y+"&addr="+addr+"&port="+port, false);
+                    xmlHttp.open("GET", "sendData.jsp?row="+x+"&col="+y+"&addr="+addr+"&port="+port+"&turn="+turn, false);
                     xmlHttp.send(null);
                     res = xmlHttp.responseText;
                     //alert(res);
@@ -43,6 +43,7 @@
             try{
                 submit = request.getParameter("submit");
                 if(submit != null){
+                    turn = Integer.parseInt(request.getParameter("firstmove"));
                     ipAddress = request.getParameter("server");
                     type = Integer.parseInt(request.getParameter("game_type"));
                     socket = new Socket(ipAddress, 6789);
@@ -69,28 +70,10 @@
                         socket.close();
                         //out.println(ipAddress+":"+port);
 
-                        gameSocket = new DatagramSocket();
-                        byte[] receiveData;
-                        byte[] sendData;
-
-                        myAddress = InetAddress.getLocalHost().toString();
-                        myAddress = myAddress.substring(myAddress.indexOf('/')+1);
-                        sendData = myAddress.getBytes();
-                        //out.println("sendata.length="+sendData.length);
-                        gamePacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(ipAddress), port);
-                        gameSocket.send(gamePacket);
-
-                        myPort = String.valueOf(gameSocket.getLocalPort());
-                        sendData = myPort.getBytes();
-                        gamePacket = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(ipAddress), port);
-                        gameSocket.send(gamePacket);
-
-                        //out.println(myAddress + ":" + myPort);
-
-                        receiveData = new byte[1024];
-                        gamePacket = new DatagramPacket(receiveData, receiveData.length);
-                        gameSocket.receive(gamePacket);
-                        gameBoard = new String(gamePacket.getData());
+                        gameSocket = new Socket(ipAddress, port);
+                        //out.println(gameSocket.getInetAddress().getLocalHost().toString());
+                        inFromServer = new BufferedReader(new InputStreamReader(gameSocket.getInputStream()));
+                        gameBoard = inFromServer.readLine();
                         
                         //gameSocket.close();
                         //gameBoard = "................................................................";
@@ -113,17 +96,17 @@
                                         <%
                                         if(gameBoard.charAt(ind) == '.'){
                                         %>
-                                        <input type="button" value="" id="cell#<% out.println(i+"_"+j); %>" class="cell" onclick="send(<% out.println(print(i,j,ipAddress,port)); %>);" />
+                                        <input type="button" value="" id="cell#<%= i+"_"+j %>" class="cell" onclick="send(<% out.println(print(i,j,ipAddress,port,turn)); %>);" />
                                         <%
                                         }
                                         else if(gameBoard.charAt(ind) == 'r'){
                                         %>
-                                        <input type="button" id="cell#<% out.println(i+"_"+j); %>" class="red_cell" />
+                                        <input type="button" id="cell#<%= i+"_"+j %>" class="red_cell" />
                                         <%
                                         }
                                         else if(gameBoard.charAt(ind) == 'b'){
                                         %>
-                                        <input type="button" id="cell#<% out.println(i+"_"+j); %>" class="blue_cell" />
+                                        <input type="button" id="cell#<%= i+"_"+j %>" class="blue_cell" />
                                         <%
                                         }
                                         %>
@@ -140,27 +123,6 @@
                         </div>
 
                         <%
-                        class Listen implements Runnable{
-                            public void run(){
-                                try{
-                                    while(true){
-                                        //byte[] recData = new byte[1024];
-                                        //DatagramPacket updatePacket = new DatagramPacket(recData, recData.length);
-                                        //gameSocket.receive(updatePacket);
-                                        //gameBoard = new String(updatePacket.getData());
-                                        PrintWriter p = new PrintWriter(new FileOutputStream(new File("currentData.txt"), true));
-                                        //p.println(new String(updatePacket.getData()));
-                                        p.println("anubhav");
-                                        p.close();
-                                    }
-                                }
-                                catch(IOException e){
-                                    //
-                                }
-                            }
-                        }
-                        Thread listeningThread = new Thread(new Listen());
-                        listeningThread.start();
                     }             
                 }
                 else{
@@ -187,8 +149,8 @@
                     //
                 }
             }*/
-            public String print(int i, int j, String ipAddress, int port){
-                return "'"+i+"','"+j+"','"+ipAddress+"','"+port+"'";
+            public String print(int i, int j, String ipAddress, int port, int turn){
+                return "'"+i+"','"+j+"','"+ipAddress+"','"+port+"','"+turn+"'";
             }
         %>
         <script>
@@ -200,17 +162,20 @@
                 xmlHttp.open("GET", "data/game_"+port+".txt", false);
                 xmlHttp.send(null);
                 board = xmlHttp.responseText;
-                //alert(res);
+                //alert(board);
             }
-            alert(board);
             var ind = 0;
             for (var i = 0; i < 8; i++) {
                 for(var j = 0; j< 8; j++){
                     var elem = document.getElementById("cell#"+i+"_"+j);
-                    if(board.charAt(ind) == '.'){
+                    //alert(elem);
+                    var curr = board.substring(ind, ind+1);
+                    //alert(curr);
+                    if(curr == "."){
                         elem.className = 'cell';
                     }
                     else if(board.charAt(ind) == 'r'){
+                        //alert("red");
                         elem.className = 'red_cell';
                         elem.onclick = '';
                     }
@@ -218,10 +183,17 @@
                         elem.className = 'blue_cell';
                         elem.onclick = '';
                     }
+                    ind += 1;
                 }
             }
-            setTimeout(update, 5000);
         }
+        
+
+        window.setInterval(function(){
+          update();
+        }, 2000);
+
+
         </script>
     </body>
 </html>
